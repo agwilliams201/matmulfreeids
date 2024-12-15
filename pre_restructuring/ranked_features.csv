@@ -1,0 +1,79 @@
+Feature,Importance
+subflow bwd bytes,8.039733561960688
+avg bwd segment size,5.91517841447418
+psh flag count,5.275721463848367
+bwd packet length mean,4.475982428850486
+bwd packet length std,4.405483078862327
+bwd packet length min,4.132957630675755
+urg flag count,3.9201879425221637
+destination port,3.6074767852346756
+bwd packet length max,3.576730444384699
+min packet length,3.490674472979934
+average packet size,3.175441239681265
+fwd packet length min,3.16618693657894
+fwd psh flags,3.141185822895963
+fwd packet length std,3.0785465447894738
+down/up ratio,2.992404375901557
+syn flag count,2.9576680519530836
+ack flag count,2.762243194431566
+max packet length,2.717699812410475
+fwd packet length max,2.639890048617755
+fwd iat total,2.6382427235521604
+fwd packet length mean,2.5729998373082945
+packet length std,2.5723088725496086
+packet length mean,2.475016919662219
+fwd iat max,2.423828446201299
+bwd iat total,2.375120338508923
+fwd iat std,2.2641641680644575
+total length of fwd packets,2.262357763197296
+flow iat std,2.2275571616636793
+min_seg_size_forward,2.172806189930713
+flow iat max,2.1317133426097516
+bwd iat mean,2.065916418456039
+flow duration,2.044052855186261
+bwd iat max,2.0355114500238414
+bwd iat std,2.0323337864328432
+flow iat mean,2.0229574267323867
+idle max,2.0204101778396018
+bwd header length,1.9578044494150364
+subflow fwd bytes,1.9249345014527584
+packet length variance,1.8591653763387654
+avg fwd segment size,1.8400442758989104
+fwd iat min,1.7658898380187371
+idle min,1.7658077231869376
+idle mean,1.707322245355954
+fin flag count,1.6085424240069135
+act_data_pkt_fwd,1.5745747664439782
+fwd header length.1,1.5442285618189742
+bwd iat min,1.531789546852033
+fwd iat mean,1.4310337813957537
+subflow bwd packets,1.364497303602034
+total length of bwd packets,1.2652458255177867
+subflow fwd packets,1.046790349922236
+fwd header length,1.0269572957392732
+total backward packets,1.0025280897562687
+total fwd packets,0.9890767052706438
+bwd packets/s,0.9344522505604076
+flow packets/s,0.9145547399309615
+fwd packets/s,0.819133341783693
+init_win_bytes_forward,0.7691945844341308
+flow iat min,0.6478710199997609
+init_win_bytes_backward,0.5066869140520811
+active min,0.44921695075091594
+flow bytes/s,0.4406435341270192
+ece flag count,0.3743939050114514
+idle std,0.36337934883580875
+rst flag count,0.34885462035737824
+active mean,0.34536535485736375
+active max,0.27722662339341164
+active std,0.21830129249758704
+cwe flag count,0.0035331655622507117
+fwd urg flags,0.0035266703797447643
+bwd psh flags,0.0
+bwd urg flags,0.0
+fwd avg bytes/bulk,0.0
+fwd avg packets/bulk,0.0
+fwd avg bulk rate,0.0
+bwd avg bytes/bulk,0.0
+bwd avg packets/bulk,0.0
+bwd avg bulk rate,0.0

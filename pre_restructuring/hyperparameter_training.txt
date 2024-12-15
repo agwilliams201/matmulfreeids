@@ -1,0 +1,165 @@
+Starting IDS processing...
+Initializing data processor...
+Loading and preprocessing data...
+Processing Monday-WorkingHours.pcap_ISCX.csv...
+Processing Tuesday-WorkingHours.pcap_ISCX.csv...
+Processing Wednesday-workingHours.pcap_ISCX.csv...
+Processing Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv...
+Processing Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv...
+Processing Friday-WorkingHours-Morning.pcap_ISCX.csv...
+Processing Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv...
+Processing Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv...
+Combining processed data...
+Encoding labels...
+Scaling features...
+Preparing data...
+Checking data for NaNs and Infs...
+X mean: 8.561087571915605e-19
+X std: 0.9473309334313534
+y distribution: (array([0., 1.], dtype=float32), array([2271320,  556556]))
+Splitting data into training, validation, and test sets...
+Total hyperparameter combinations to try: 16
+
+Trying hyperparameters: LR=0.001, Batch Size=32, Hidden Size=128, Activation=tanh
+Epoch 1/10, Training Loss: 180192.9159, Validation Loss: 2.4173
+Epoch 2/10, Training Loss: 153197.1883, Validation Loss: 2.4626
+Epoch 3/10, Training Loss: 150508.8913, Validation Loss: 2.2976
+Epoch 4/10, Training Loss: 156509.1512, Validation Loss: 2.4253
+Epoch 5/10, Training Loss: 167563.7796, Validation Loss: 2.4672
+Early stopping at epoch 6
+
+Trying hyperparameters: LR=0.001, Batch Size=32, Hidden Size=128, Activation=relu
+Epoch 1/10, Training Loss: 124700.1465, Validation Loss: 10.8898
+Epoch 2/10, Training Loss: 140491.7552, Validation Loss: 5.7386
+Epoch 3/10, Training Loss: 160637.9564, Validation Loss: 5.6790
+Epoch 4/10, Training Loss: 185096.0239, Validation Loss: 3.6874
+Epoch 5/10, Training Loss: 191632.0829, Validation Loss: 8.9272
+Epoch 6/10, Training Loss: 189293.8884, Validation Loss: 4.0914
+Early stopping at epoch 7
+
+Trying hyperparameters: LR=0.001, Batch Size=32, Hidden Size=256, Activation=tanh
+Epoch 1/10, Training Loss: 275916.6976, Validation Loss: 2.7809
+Epoch 2/10, Training Loss: 226339.2583, Validation Loss: 3.9879
+Epoch 3/10, Training Loss: 220605.3541, Validation Loss: 3.4734
+Early stopping at epoch 4
+
+Trying hyperparameters: LR=0.001, Batch Size=32, Hidden Size=256, Activation=relu
+Epoch 1/10, Training Loss: 225938.1472, Validation Loss: 5.9106
+Epoch 2/10, Training Loss: 293086.7949, Validation Loss: 6.8917
+Epoch 3/10, Training Loss: 332454.7802, Validation Loss: 5.2642
+Epoch 4/10, Training Loss: 304246.7073, Validation Loss: 5.3849
+Epoch 5/10, Training Loss: 282074.4479, Validation Loss: 4.9323
+Epoch 6/10, Training Loss: 263699.8906, Validation Loss: 4.5138
+Epoch 7/10, Training Loss: 254056.9990, Validation Loss: 3.6911
+Epoch 8/10, Training Loss: 250562.6568, Validation Loss: 3.5171
+Epoch 9/10, Training Loss: 248993.0620, Validation Loss: 4.2491
+Epoch 10/10, Training Loss: 247845.4229, Validation Loss: 3.9384
+
+Trying hyperparameters: LR=0.001, Batch Size=64, Hidden Size=128, Activation=tanh
+Epoch 1/10, Training Loss: 109010.6824, Validation Loss: 4.7676
+Epoch 2/10, Training Loss: 108987.3258, Validation Loss: 3.6936
+Epoch 3/10, Training Loss: 98830.7664, Validation Loss: 3.3594
+Epoch 4/10, Training Loss: 91640.7783, Validation Loss: 3.0465
+Epoch 5/10, Training Loss: 88349.4481, Validation Loss: 2.7551
+Epoch 6/10, Training Loss: 86829.3271, Validation Loss: 3.1393
+Epoch 7/10, Training Loss: 87893.0066, Validation Loss: 3.8832
+Early stopping at epoch 8
+
+Trying hyperparameters: LR=0.001, Batch Size=64, Hidden Size=128, Activation=relu
+Epoch 1/10, Training Loss: 60823.9986, Validation Loss: 1.8240
+Epoch 2/10, Training Loss: 79876.7949, Validation Loss: 7.2925
+Epoch 3/10, Training Loss: 82876.7266, Validation Loss: 2.3789
+Early stopping at epoch 4
+
+Trying hyperparameters: LR=0.001, Batch Size=64, Hidden Size=256, Activation=tanh
+Epoch 1/10, Training Loss: 128316.7257, Validation Loss: 3.1923
+Epoch 2/10, Training Loss: 104205.9903, Validation Loss: 2.9861
+Epoch 3/10, Training Loss: 100709.4677, Validation Loss: 3.6566
+Epoch 4/10, Training Loss: 98926.7810, Validation Loss: 2.8927
+Epoch 5/10, Training Loss: 96504.7298, Validation Loss: 2.8789
+Epoch 6/10, Training Loss: 94004.3982, Validation Loss: 2.6461
+Epoch 7/10, Training Loss: 92059.7880, Validation Loss: 2.6288
+Epoch 8/10, Training Loss: 90001.2049, Validation Loss: 2.7352
+Epoch 9/10, Training Loss: 89054.2964, Validation Loss: 2.2827
+Epoch 10/10, Training Loss: 88875.9128, Validation Loss: 2.6303
+
+Trying hyperparameters: LR=0.001, Batch Size=64, Hidden Size=256, Activation=relu
+Epoch 1/10, Training Loss: 95886.6218, Validation Loss: 12.5189
+Epoch 2/10, Training Loss: 85105.0580, Validation Loss: 8.4172
+Epoch 3/10, Training Loss: 93556.4324, Validation Loss: 3.5270
+Epoch 4/10, Training Loss: 101088.0440, Validation Loss: 3.3271
+Epoch 5/10, Training Loss: 101795.9658, Validation Loss: 4.3576
+Epoch 6/10, Training Loss: 104479.2156, Validation Loss: 3.5470
+Early stopping at epoch 7
+
+Trying hyperparameters: LR=0.0001, Batch Size=32, Hidden Size=128, Activation=tanh
+Epoch 1/10, Training Loss: 177366.1646, Validation Loss: 1.7924
+Epoch 2/10, Training Loss: 146387.9018, Validation Loss: 1.4552
+Epoch 3/10, Training Loss: 142036.6906, Validation Loss: 1.6923
+Epoch 4/10, Training Loss: 141727.7762, Validation Loss: 2.0785
+Early stopping at epoch 5
+
+Trying hyperparameters: LR=0.0001, Batch Size=32, Hidden Size=128, Activation=relu
+Epoch 1/10, Training Loss: 245968.4294, Validation Loss: 14.7434
+Epoch 2/10, Training Loss: 222460.8391, Validation Loss: 9.6831
+Epoch 3/10, Training Loss: 221771.8302, Validation Loss: 17.2236
+Epoch 4/10, Training Loss: 222954.3989, Validation Loss: 4.7095
+Epoch 5/10, Training Loss: 224675.3042, Validation Loss: 3.9169
+Epoch 6/10, Training Loss: 226508.1110, Validation Loss: 4.1313
+Epoch 7/10, Training Loss: 227982.4850, Validation Loss: 4.7590
+Early stopping at epoch 8
+
+Trying hyperparameters: LR=0.0001, Batch Size=32, Hidden Size=256, Activation=tanh
+Epoch 1/10, Training Loss: 333483.3183, Validation Loss: 4.2859
+Epoch 2/10, Training Loss: 298469.1010, Validation Loss: 3.7387
+Epoch 3/10, Training Loss: 306834.2245, Validation Loss: 6.1900
+Epoch 4/10, Training Loss: 322928.2453, Validation Loss: 4.4099
+Early stopping at epoch 5
+
+Trying hyperparameters: LR=0.0001, Batch Size=32, Hidden Size=256, Activation=relu
+Epoch 1/10, Training Loss: 338527.6252, Validation Loss: 17.0991
+Epoch 2/10, Training Loss: 293641.4539, Validation Loss: 10.5824
+Epoch 3/10, Training Loss: 285360.9792, Validation Loss: 5.9660
+Epoch 4/10, Training Loss: 282912.3522, Validation Loss: 18.3772
+Epoch 5/10, Training Loss: 281195.1197, Validation Loss: 59.3470
+Early stopping at epoch 6
+
+Trying hyperparameters: LR=0.0001, Batch Size=64, Hidden Size=128, Activation=tanh
+Epoch 1/10, Training Loss: 123987.8697, Validation Loss: 4.7546
+Epoch 2/10, Training Loss: 109919.7813, Validation Loss: 4.9070
+Epoch 3/10, Training Loss: 107104.5186, Validation Loss: 3.7210
+Epoch 4/10, Training Loss: 109894.1619, Validation Loss: 3.5596
+Epoch 5/10, Training Loss: 113201.5868, Validation Loss: 3.6903
+Epoch 6/10, Training Loss: 115819.5684, Validation Loss: 3.4052
+Epoch 7/10, Training Loss: 116928.1356, Validation Loss: 3.8542
+Epoch 8/10, Training Loss: 117338.9068, Validation Loss: 3.4643
+Early stopping at epoch 9
+
+Trying hyperparameters: LR=0.0001, Batch Size=64, Hidden Size=128, Activation=relu
+Epoch 1/10, Training Loss: 102332.8259, Validation Loss: 2.9499
+Epoch 2/10, Training Loss: 85862.6844, Validation Loss: 2.0754
+Epoch 3/10, Training Loss: 77717.9924, Validation Loss: 4.7404
+Epoch 4/10, Training Loss: 75811.3736, Validation Loss: 2.2199
+Early stopping at epoch 5
+
+Trying hyperparameters: LR=0.0001, Batch Size=64, Hidden Size=256, Activation=tanh
+Epoch 1/10, Training Loss: 132984.5823, Validation Loss: 2.9769
+Epoch 2/10, Training Loss: 114270.2012, Validation Loss: 2.6399
+Epoch 3/10, Training Loss: 103885.9562, Validation Loss: 2.8592
+Epoch 4/10, Training Loss: 100742.1165, Validation Loss: 2.5788
+Epoch 5/10, Training Loss: 101492.3679, Validation Loss: 2.8559
+Epoch 6/10, Training Loss: 103607.6675, Validation Loss: 3.0182
+Epoch 7/10, Training Loss: 105724.4448, Validation Loss: 2.2998
+Epoch 8/10, Training Loss: 107740.8040, Validation Loss: 2.7185
+Epoch 9/10, Training Loss: 109415.2045, Validation Loss: 2.6687
+Early stopping at epoch 10
+
+Trying hyperparameters: LR=0.0001, Batch Size=64, Hidden Size=256, Activation=relu
+Epoch 1/10, Training Loss: 126584.7571, Validation Loss: 3.7054
+Epoch 2/10, Training Loss: 107141.1068, Validation Loss: 3.0779
+Epoch 3/10, Training Loss: 98092.2801, Validation Loss: 3.1170
+Epoch 4/10, Training Loss: 96167.1478, Validation Loss: 3.2627
+Early stopping at epoch 5
+
+Best Hyperparameters: {'hidden_size': 128, 'activation_function': 'tanh', 'learning_rate': 0.0001, 'batch_size': 32}
+Best Validation Loss: 1.4552

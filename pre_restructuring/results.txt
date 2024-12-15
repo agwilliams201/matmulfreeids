@@ -1,0 +1,11 @@
+Making predictions on test data...
+
+Evaluation Results:
+              precision    recall  f1-score   support
+
+         0.0       0.81      0.89      0.85    454265
+         1.0       0.27      0.17      0.21    111311
+
+    accuracy                           0.75    565576
+   macro avg       0.54      0.53      0.53    565576
+weighted avg       0.71      0.75      0.72    565576

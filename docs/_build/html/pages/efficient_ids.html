@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Our Model: Efficient Intrusion Detection System &#8212; Network Anomaly Detection with BitNet  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Memory-Efficient Data Processor" href="ids_data_processor.html" />
+    <link rel="prev" title="Project Notebook" href="main.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="our-model-efficient-intrusion-detection-system">
+<h1>Our Model: Efficient Intrusion Detection System<a class="headerlink" href="#our-model-efficient-intrusion-detection-system" title="Link to this heading">¶</a></h1>
+<p>This section outlines the implementation details and methodology of the <strong>EfficientIDS</strong> model. The model leverages ternary weights and hardware-efficient architectures to achieve effective intrusion detection with reduced computational overhead.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>EfficientIDS is designed for hardware-constrained environments. The model incorporates:</p>
+<ul class="simple">
+<li><p><strong>Ternary weights</strong> to reduce computation and memory requirements.</p></li>
+<li><p><strong>Batch normalization</strong> for input stabilization.</p></li>
+<li><p><strong>Dropout and layer normalization</strong> for improved regularization and generalization.</p></li>
+<li><p>A <strong>matmul-free GRU</strong> for temporal modeling without resource-intensive operations.</p></li>
+</ul>
+</section>
+<section id="model-components">
+<h2>Model Components<a class="headerlink" href="#model-components" title="Link to this heading">¶</a></h2>
+<section id="ternarylinear-layer">
+<h3>TernaryLinear Layer<a class="headerlink" href="#ternarylinear-layer" title="Link to this heading">¶</a></h3>
+<p>The <cite>TernaryLinear</cite> layer is an improved linear layer that:</p>
+<ul class="simple">
+<li><p>Uses ternary weights (values of -1, 0, or 1) with a learned scaling factor.</p></li>
+<li><p>Includes batch normalization to stabilize input distributions.</p></li>
+<li><p>Implements weight normalization and ternarization during training.</p></li>
+</ul>
+<p><strong>Key Features:</strong></p>
+<ul class="simple">
+<li><p><strong>Weight Constraining:</strong> Applies L2 normalization to maintain numerical stability.</p></li>
+<li><p><strong>Ternarization:</strong> Converts weights to ternary values for efficient hardware processing.</p></li>
+<li><p><strong>Scaling Factor:</strong> Learns an optimal scaling factor for ternary weights.</p></li>
+</ul>
+<p><strong>Code Snippet:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TernaryLinear</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Improved TernaryLinear layer with better initialization and normalization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_features</span><span class="p">,</span> <span class="n">out_features</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_features</span> <span class="o">=</span> <span class="n">in_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_features</span> <span class="o">=</span> <span class="n">out_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_features</span><span class="p">)</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">in_features</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">in_features</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="c1"># Initialize weights and bias</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">out_features</span><span class="p">,</span> <span class="n">in_features</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">out_features</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+        <span class="c1"># Learnable scaling factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaling_factor</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Initialize parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span>
+
+        <span class="c1"># Batch normalization for input stabilization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">in_features</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize parameters with improved scaling.&quot;&quot;&quot;</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+        <span class="n">fan_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">fan_in</span><span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="o">-</span><span class="n">bound</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaling_factor</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">constrain_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply constraints to weights during training.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="c1"># L2 normalize weights</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">div_</span><span class="p">(</span><span class="n">norm</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">ternarize_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert weights to ternary values with learned scaling.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="n">w_ternary</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">w_ternary</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># Apply input normalization</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Get ternary weights</span>
+        <span class="n">w_ternary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ternarize_weights</span><span class="p">()</span>
+
+        <span class="c1"># Efficient matrix multiplication alternative</span>
+        <span class="n">pos_contrib</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_features</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">neg_contrib</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_features</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Process positive weights</span>
+        <span class="n">pos_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">w_ternary</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pos_mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">pos_contrib</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pos_mask</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Process negative weights</span>
+        <span class="n">neg_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">w_ternary</span> <span class="o">==</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">neg_mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">neg_contrib</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">neg_mask</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Combine contributions</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">pos_contrib</span> <span class="o">-</span> <span class="n">neg_contrib</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+</pre></div>
+</div>
+</section>
+<section id="matmulfreegru">
+<h3>MatMulFreeGRU<a class="headerlink" href="#matmulfreegru" title="Link to this heading">¶</a></h3>
+<p>The <cite>MatMulFreeGRU</cite> replaces traditional matrix multiplications with ternary weight operations. This component is used for temporal modeling and includes:</p>
+<ul class="simple">
+<li><p><strong>Update Gate:</strong> Determines the importance of new vs. existing information.</p></li>
+<li><p><strong>Reset Gate:</strong> Modulates the influence of prior states.</p></li>
+<li><p><strong>Layer Normalization:</strong> Ensures stability during state updates.</p></li>
+<li><p><strong>Dropout:</strong> Enhances regularization.</p></li>
+</ul>
+<p><strong>Code Snippet:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MatMulFreeGRU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Improved MatMul-free GRU with better regularization and stability.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_rate</span> <span class="o">=</span> <span class="n">dropout_rate</span>
+
+        <span class="c1"># Gates using improved TernaryLinear</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_gate</span> <span class="o">=</span> <span class="n">TernaryLinear</span><span class="p">(</span><span class="n">input_size</span> <span class="o">+</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_gate</span> <span class="o">=</span> <span class="n">TernaryLinear</span><span class="p">(</span><span class="n">input_size</span> <span class="o">+</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_transform</span> <span class="o">=</span> <span class="n">TernaryLinear</span><span class="p">(</span><span class="n">input_size</span> <span class="o">+</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+
+        <span class="c1"># Additional regularization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_rate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">h</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Combine input and hidden state</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Apply dropout to combined input</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+
+        <span class="c1"># Compute gates with regularization</span>
+        <span class="n">update</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update_gate</span><span class="p">(</span><span class="n">combined</span><span class="p">))</span>
+        <span class="n">reset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_gate</span><span class="p">(</span><span class="n">combined</span><span class="p">))</span>
+
+        <span class="c1"># Compute candidate hidden state</span>
+        <span class="n">combined_reset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">reset</span> <span class="o">*</span> <span class="n">h</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_transform</span><span class="p">(</span><span class="n">combined_reset</span><span class="p">))</span>
+
+        <span class="c1"># Update hidden state</span>
+        <span class="n">h_new</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">update</span><span class="p">)</span> <span class="o">*</span> <span class="n">h</span> <span class="o">+</span> <span class="n">update</span> <span class="o">*</span> <span class="n">candidate</span>
+
+        <span class="c1"># Apply layer normalization</span>
+        <span class="n">h_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_norm</span><span class="p">(</span><span class="n">h_new</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">h_new</span><span class="p">,</span> <span class="n">h_new</span>
+</pre></div>
+</div>
+</section>
+<section id="efficientids-architecture">
+<h3>EfficientIDS Architecture<a class="headerlink" href="#efficientids-architecture" title="Link to this heading">¶</a></h3>
+<p>EfficientIDS integrates feature extraction and temporal modeling components:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt><strong>Feature Extraction:</strong></dt><dd><ul class="simple">
+<li><p>Uses multiple layers of <cite>TernaryLinear</cite> combined with activation functions and batch normalization.</p></li>
+<li><p>Employs dropout to prevent overfitting.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Temporal Modeling:</strong></dt><dd><ul class="simple">
+<li><p>Processes temporal dependencies with the <cite>MatMulFreeGRU</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Classification Head:</strong></dt><dd><ul class="simple">
+<li><p>Utilizes a <cite>TernaryLinear</cite> layer for final anomaly classification.</p></li>
+<li><p>Employs dropout for additional regularization.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+</section>
+<section id="forward-pass">
+<h2>Forward Pass<a class="headerlink" href="#forward-pass" title="Link to this heading">¶</a></h2>
+<p>The forward pass of EfficientIDS involves:</p>
+<ol class="arabic simple">
+<li><p><strong>Feature Extraction:</strong> Input data passes through feature layers, with each layer applying ternary weights, ReLU activation, batch normalization, and dropout.</p></li>
+<li><p><strong>Temporal Modeling:</strong> Outputs are processed by the GRU for temporal dependencies.</p></li>
+<li><p><strong>Classification:</strong> The classifier predicts anomalies based on processed features.</p></li>
+</ol>
+<p>The architecture ensures computational efficiency and robust performance.</p>
+</section>
+<section id="code-snippet">
+<h2>Code Snippet<a class="headerlink" href="#code-snippet" title="Link to this heading">¶</a></h2>
+<p>Below is the implementation of the EfficientIDS model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EfficientIDS</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">hidden_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">layer_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">num_features</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">hidden_size</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_layers</span>
+
+        <span class="c1"># Feature extraction layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">TernaryLinear</span><span class="p">(</span><span class="n">layer_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">layer_sizes</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">layer_sizes</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_rate</span><span class="p">)</span>
+            <span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">)</span>
+        <span class="p">])</span>
+
+        <span class="c1"># Temporal modeling</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gru</span> <span class="o">=</span> <span class="n">MatMulFreeGRU</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="p">)</span>
+
+        <span class="c1"># Classification head</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">TernaryLinear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_rate</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_layers</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">temporal_features</span><span class="p">,</span> <span class="n">h_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">temporal_features</span><span class="p">)</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logits</span><span class="p">,</span> <span class="n">h_new</span>
+</pre></div>
+</div>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h2>
+<p>The EfficientIDS model demonstrates a balance of computational efficiency and anomaly detection accuracy. By leveraging ternary weights and matmul-free operations, it provides a scalable solution for intrusion detection in resource-constrained environments.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Network Anomaly Detection with BitNet</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Resources:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">Project Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="main.html#Conclusion">Conclusion</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Our Model: Efficient Intrusion Detection System</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-components">Model Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#forward-pass">Forward Pass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-snippet">Code Snippet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ids_data_processor.html">Memory-Efficient Data Processor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ids_processor.html">IDS Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="standard_ids.html">Baseline IDS Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proposal.html">Project Proposal</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="main.html" title="previous chapter">Project Notebook</a></li>
+      <li>Next: <a href="ids_data_processor.html" title="next chapter">Memory-Efficient Data Processor</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alexander Baumgartner, Alexander Williams, Alejandro Alonso.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/pages/efficient_ids.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

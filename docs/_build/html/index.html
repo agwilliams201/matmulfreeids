@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Network Anomaly Detection with BitNet | Intrusion Detection System (IDS) &#8212; Network Anomaly Detection with BitNet  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Project Notebook" href="pages/main.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="network-anomaly-detection-with-bitnet-intrusion-detection-system-ids">
+<h1>Network Anomaly Detection with BitNet | Intrusion Detection System (IDS)<a class="headerlink" href="#network-anomaly-detection-with-bitnet-intrusion-detection-system-ids" title="Link to this heading">¶</a></h1>
+<p>Final project for the University of Chicago’s CMSC 25422 Machine Learning for Computer Systems course.</p>
+<p>Collaborators: Alexander Baumgartner, Alexander Williams, Alejandro Alonso</p>
+<p>Professor: Nick Feamster</p>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>Project Description: One of the main problems with machine learning models on a large scale is their resource-intensive nature. This can cause massive spikes in both energy usage and runtime, which is especially problematic in fields such as networking, where latency is of the utmost importance. Our goal with this project is to transfer the principles of BitNet, a recent model which does away with resource-intensive matrix multiplications via the quantization of weights, to a networking context. Specifically, we build a simple regression model with this method, which we then use on a dataset of packet traces during which several intrusions were attempted.</p>
+</section>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Models:</strong> Learn about the various IDS models implemented in this project, including both baseline and hardware-efficient approaches.</p></li>
+<li><p><strong>Data Processing:</strong> Understand the preprocessing techniques employed to prepare network traffic data for model training and evaluation.</p></li>
+<li><p><strong>Performance Evaluation:</strong> Explore the evaluation metrics, runtime analyses, and energy consumption insights that highlight the strengths of each model.</p></li>
+</ul>
+</section>
+<section id="project-highlights">
+<h2>Project Highlights<a class="headerlink" href="#project-highlights" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Hardware Efficiency:</strong> The project emphasizes the use of hardware-efficient techniques, leveraging ternary weights and reduced-complexity operations.</p></li>
+<li><p><strong>Performance Comparison:</strong> Provides a robust framework for comparing baseline and optimized IDS models.</p></li>
+<li><p><strong>Scalability:</strong> Demonstrates scalable data processing and evaluation for large datasets.</p></li>
+</ul>
+</section>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
+<p>To get started with this project, refer to the following resources:</p>
+<ol class="arabic simple">
+<li><p><strong>Project Notebook:</strong>
+- Provides an end-to-end demonstration of the IDS evaluation pipeline.
+- Combines training, evaluation, and performance measurement in a clear and executable format.
+- In-depth visual analyses of precision-recall curves and CPU usage over time for each model.</p></li>
+<li><p><strong>Models Documentation:</strong>
+- Overview of the implemented IDS models, including the StandardIDS (baseline model) and EfficientIDS (our model).
+- Insights into their architectural choices and use cases.</p></li>
+<li><p><strong>Data Processor Documentation:</strong>
+- Overview of data preprocessing techniques, including handling outliers and preparing datasets for anomaly detection.</p></li>
+<li><p><strong>Model Wrapper Documentation:</strong>
+- Overview of the <cite>IDSProcessor</cite>, which integrates training, evaluation, and anomaly detection functionalities.</p></li>
+</ol>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Resources:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/main.html">Project Notebook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Notebook-Summary">Notebook Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Packages">Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Setup-and-Initialization">Setup and Initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Data-Directory-and-Configurations">Data Directory and Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Integration-Function">Integration Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Running-the-Models-and-Measuring-Performance">Running the Models and Measuring Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Results-Summary">Results Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Precision-Recall-Visualization">Precision-Recall Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#CPU-Usage-Visualization">CPU Usage Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/main.html#Confusion-Matrix-Visualization">Confusion Matrix Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pages/main.html#Conclusion">Conclusion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/efficient_ids.html">Our Model: Efficient Intrusion Detection System</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/efficient_ids.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/efficient_ids.html#model-components">Model Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/efficient_ids.html#forward-pass">Forward Pass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/efficient_ids.html#code-snippet">Code Snippet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/efficient_ids.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pages/ids_data_processor.html">Memory-Efficient Data Processor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_data_processor.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_data_processor.html#key-features">Key Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_data_processor.html#code-components">Code Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_data_processor.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pages/ids_processor.html">IDS Wrapper</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_processor.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_processor.html#key-features">Key Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_processor.html#code-components">Code Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/ids_processor.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pages/standard_ids.html">Baseline IDS Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/standard_ids.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/standard_ids.html#key-features">Key Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/standard_ids.html#code-components">Code Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/standard_ids.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pages/proposal.html">Project Proposal</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/proposal.html#Project-Description">Project Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/proposal.html#Data">Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/proposal.html#Deliverables">Deliverables</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<p>For further details, please refer to the project guidelines and documentation files listed above.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Network Anomaly Detection with BitNet</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Resources:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/main.html">Project Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/main.html#Conclusion">Conclusion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/efficient_ids.html">Our Model: Efficient Intrusion Detection System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/ids_data_processor.html">Memory-Efficient Data Processor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/ids_processor.html">IDS Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/standard_ids.html">Baseline IDS Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/proposal.html">Project Proposal</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="pages/main.html" title="next chapter">Project Notebook</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alexander Baumgartner, Alexander Williams, Alejandro Alonso.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

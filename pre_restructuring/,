@@ -1,0 +1,4 @@
+data/
+trained_ids_model.pth
+path/
+venv/

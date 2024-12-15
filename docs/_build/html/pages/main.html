@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Project Notebook &#8212; Network Anomaly Detection with BitNet  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Our Model: Efficient Intrusion Detection System" href="efficient_ids.html" />
+    <link rel="prev" title="Network Anomaly Detection with BitNet | Intrusion Detection System (IDS)" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="Project-Notebook">
+<h1>Project Notebook<a class="headerlink" href="#Project-Notebook" title="Link to this heading">¶</a></h1>
+<p>Project Topic: Network Anomaly Detection with BitNet Project Description: One of the main problems with machine learning models on a large scale is their resource-intensive nature. This can cause massive spikes in both energy usage and runtime, which is especially problematic in fields such as networking, where latency is of the utmost importance. Our goal with this project is to transfer the principles of BitNet, a recent model which does away with resource-intensive matrix multiplications via
+the quantization of weights, to a networking context. Specifically, we build a simple regression model with this method, which we will then use on a dataset of packet traces during which several intrusions were attempted.</p>
+<p>Collaborators: Alexander Baumgartner, Alexander Williams, Alejandro Alonso</p>
+<p>Professor: Nick Feamster</p>
+<hr class="docutils" />
+<section id="Notebook-Summary">
+<h2>Notebook Summary<a class="headerlink" href="#Notebook-Summary" title="Link to this heading">¶</a></h2>
+<p>This notebook evaluates the performance of different IDS models, focusing on both the standard and hardware-efficient variants. It recreates the functionality of <code class="docutils literal notranslate"><span class="pre">measure_models.py</span></code> in a notebook format and includes the integration function directly for better visibility.</p>
+<hr class="docutils" />
+</section>
+<section id="Packages">
+<h2>Packages<a class="headerlink" href="#Packages" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%pip install matplotlib scikit-learn pandas numpy scipy torch tqdm joblib pathlib psutil pyRapl
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Collecting matplotlib
+  Downloading matplotlib-3.9.3-cp311-cp311-macosx_11_0_arm64.whl.metadata (11 kB)
+Collecting scikit-learn
+  Downloading scikit_learn-1.6.0-cp311-cp311-macosx_12_0_arm64.whl.metadata (31 kB)
+Collecting pandas
+  Downloading pandas-2.2.3-cp311-cp311-macosx_11_0_arm64.whl.metadata (89 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">89.9/89.9 kB</span> <span class="ansi-red-fg">3.2 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: numpy in /opt/homebrew/lib/python3.11/site-packages (2.1.2)
+Collecting scipy
+  Downloading scipy-1.14.1-cp311-cp311-macosx_14_0_arm64.whl.metadata (60 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">60.8/60.8 kB</span> <span class="ansi-red-fg">7.0 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Collecting torch
+  Downloading torch-2.5.1-cp311-none-macosx_11_0_arm64.whl.metadata (28 kB)
+Collecting tqdm
+  Using cached tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+Collecting joblib
+  Using cached joblib-1.4.2-py3-none-any.whl.metadata (5.4 kB)
+Collecting pathlib
+  Using cached pathlib-1.0.1-py3-none-any.whl.metadata (5.1 kB)
+Requirement already satisfied: psutil in /Users/alexwilliams/Library/Python/3.11/lib/python/site-packages (5.9.8)
+Collecting pyRapl
+  Using cached pyRAPL-0.2.3.1-py2.py3-none-any.whl.metadata (8.0 kB)
+Collecting contourpy&gt;=1.0.1 (from matplotlib)
+  Downloading contourpy-1.3.1-cp311-cp311-macosx_11_0_arm64.whl.metadata (5.4 kB)
+Collecting cycler&gt;=0.10 (from matplotlib)
+  Using cached cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+Collecting fonttools&gt;=4.22.0 (from matplotlib)
+  Downloading fonttools-4.55.3-cp311-cp311-macosx_10_9_universal2.whl.metadata (165 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">165.1/165.1 kB</span> <span class="ansi-red-fg">7.7 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Collecting kiwisolver&gt;=1.3.1 (from matplotlib)
+  Downloading kiwisolver-1.4.7-cp311-cp311-macosx_11_0_arm64.whl.metadata (6.3 kB)
+Requirement already satisfied: packaging&gt;=20.0 in /Users/alexwilliams/Library/Python/3.11/lib/python/site-packages (from matplotlib) (24.0)
+Collecting pillow&gt;=8 (from matplotlib)
+  Downloading pillow-11.0.0-cp311-cp311-macosx_11_0_arm64.whl.metadata (9.1 kB)
+Collecting pyparsing&gt;=2.3.1 (from matplotlib)
+  Using cached pyparsing-3.2.0-py3-none-any.whl.metadata (5.0 kB)
+Requirement already satisfied: python-dateutil&gt;=2.7 in /Users/alexwilliams/Library/Python/3.11/lib/python/site-packages (from matplotlib) (2.9.0.post0)
+Collecting threadpoolctl&gt;=3.1.0 (from scikit-learn)
+  Using cached threadpoolctl-3.5.0-py3-none-any.whl.metadata (13 kB)
+Collecting pytz&gt;=2020.1 (from pandas)
+  Using cached pytz-2024.2-py2.py3-none-any.whl.metadata (22 kB)
+Collecting tzdata&gt;=2022.7 (from pandas)
+  Using cached tzdata-2024.2-py2.py3-none-any.whl.metadata (1.4 kB)
+Collecting filelock (from torch)
+  Using cached filelock-3.16.1-py3-none-any.whl.metadata (2.9 kB)
+Requirement already satisfied: typing-extensions&gt;=4.8.0 in /Users/alexwilliams/Library/Python/3.11/lib/python/site-packages (from torch) (4.11.0)
+Collecting networkx (from torch)
+  Using cached networkx-3.4.2-py3-none-any.whl.metadata (6.3 kB)
+Collecting jinja2 (from torch)
+  Using cached jinja2-3.1.4-py3-none-any.whl.metadata (2.6 kB)
+Collecting fsspec (from torch)
+  Using cached fsspec-2024.10.0-py3-none-any.whl.metadata (11 kB)
+Collecting sympy==1.13.1 (from torch)
+  Using cached sympy-1.13.1-py3-none-any.whl.metadata (12 kB)
+Collecting mpmath&lt;1.4,&gt;=1.1.0 (from sympy==1.13.1-&gt;torch)
+  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Requirement already satisfied: six&gt;=1.5 in /Users/alexwilliams/Library/Python/3.11/lib/python/site-packages (from python-dateutil&gt;=2.7-&gt;matplotlib) (1.16.0)
+Collecting MarkupSafe&gt;=2.0 (from jinja2-&gt;torch)
+  Downloading MarkupSafe-3.0.2-cp311-cp311-macosx_11_0_arm64.whl.metadata (4.0 kB)
+Downloading matplotlib-3.9.3-cp311-cp311-macosx_11_0_arm64.whl (7.8 MB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">7.8/7.8 MB</span> <span class="ansi-red-fg">22.4 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>00:0100:01
+Downloading scikit_learn-1.6.0-cp311-cp311-macosx_12_0_arm64.whl (11.1 MB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">11.1/11.1 MB</span> <span class="ansi-red-fg">23.4 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>00:0100:01
+Downloading pandas-2.2.3-cp311-cp311-macosx_11_0_arm64.whl (11.3 MB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">11.3/11.3 MB</span> <span class="ansi-red-fg">22.0 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>a <span class="ansi-cyan-fg">0:00:01</span>
+Downloading scipy-1.14.1-cp311-cp311-macosx_14_0_arm64.whl (23.1 MB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">23.1/23.1 MB</span> <span class="ansi-red-fg">22.4 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>00:0100:01
+Downloading torch-2.5.1-cp311-none-macosx_11_0_arm64.whl (63.9 MB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">63.9/63.9 MB</span> <span class="ansi-red-fg">19.7 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>00:0100:01
+Using cached sympy-1.13.1-py3-none-any.whl (6.2 MB)
+Using cached tqdm-4.67.1-py3-none-any.whl (78 kB)
+Using cached joblib-1.4.2-py3-none-any.whl (301 kB)
+Using cached pathlib-1.0.1-py3-none-any.whl (14 kB)
+Using cached pyRAPL-0.2.3.1-py2.py3-none-any.whl (27 kB)
+Downloading contourpy-1.3.1-cp311-cp311-macosx_11_0_arm64.whl (254 kB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">254.5/254.5 kB</span> <span class="ansi-red-fg">15.1 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Using cached cycler-0.12.1-py3-none-any.whl (8.3 kB)
+Downloading fonttools-4.55.3-cp311-cp311-macosx_10_9_universal2.whl (2.8 MB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">2.8/2.8 MB</span> <span class="ansi-red-fg">19.7 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>a <span class="ansi-cyan-fg">0:00:01</span>
+Downloading kiwisolver-1.4.7-cp311-cp311-macosx_11_0_arm64.whl (64 kB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">64.3/64.3 kB</span> <span class="ansi-red-fg">5.2 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Downloading pillow-11.0.0-cp311-cp311-macosx_11_0_arm64.whl (3.0 MB)
+   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">3.0/3.0 MB</span> <span class="ansi-red-fg">24.0 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>00:0100:01
+Using cached pyparsing-3.2.0-py3-none-any.whl (106 kB)
+Using cached pytz-2024.2-py2.py3-none-any.whl (508 kB)
+Using cached threadpoolctl-3.5.0-py3-none-any.whl (18 kB)
+Using cached tzdata-2024.2-py2.py3-none-any.whl (346 kB)
+Using cached filelock-3.16.1-py3-none-any.whl (16 kB)
+Using cached fsspec-2024.10.0-py3-none-any.whl (179 kB)
+Using cached jinja2-3.1.4-py3-none-any.whl (133 kB)
+Using cached networkx-3.4.2-py3-none-any.whl (1.7 MB)
+Downloading MarkupSafe-3.0.2-cp311-cp311-macosx_11_0_arm64.whl (12 kB)
+Using cached mpmath-1.3.0-py3-none-any.whl (536 kB)
+Installing collected packages: pytz, pathlib, mpmath, tzdata, tqdm, threadpoolctl, sympy, scipy, pyRapl, pyparsing, pillow, networkx, MarkupSafe, kiwisolver, joblib, fsspec, fonttools, filelock, cycler, contourpy, scikit-learn, pandas, matplotlib, jinja2, torch
+Successfully installed MarkupSafe-3.0.2 contourpy-1.3.1 cycler-0.12.1 filelock-3.16.1 fonttools-4.55.3 fsspec-2024.10.0 jinja2-3.1.4 joblib-1.4.2 kiwisolver-1.4.7 matplotlib-3.9.3 mpmath-1.3.0 networkx-3.4.2 pandas-2.2.3 pathlib-1.0.1 pillow-11.0.0 pyRapl-0.2.3.1 pyparsing-3.2.0 pytz-2024.2 scikit-learn-1.6.0 scipy-1.14.1 sympy-1.13.1 threadpoolctl-3.5.0 torch-2.5.1 tqdm-4.67.1 tzdata-2024.2
+
+<span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> A new release of pip is available: <span class="ansi-red-fg">24.0</span> -&gt; <span class="ansi-green-fg">24.3.1</span>
+<span class="ansi-bold">[</span><span class="ansi-blue-fg">notice</span><span class="ansi-bold">]</span> To update, run: <span class="ansi-green-fg">python3.11 -m pip install --upgrade pip</span>
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+</section>
+<section id="Setup-and-Initialization">
+<h2>Setup and Initialization<a class="headerlink" href="#Setup-and-Initialization" title="Link to this heading">¶</a></h2>
+<p><em>This cell imports all necessary libraries and checks for optional features like pyRAPL for energy monitoring.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Required imports
+import time
+import torch
+import psutil
+import platform
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from pathlib import Path
+from datetime import datetime
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report, precision_recall_curve, auc
+
+# Import pyRAPL for energy measurement if available
+try:
+    import pyRAPL
+    PYRAPL_AVAILABLE = True
+except ImportError:
+    PYRAPL_AVAILABLE = False
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:root:imports error
+ You need to install pymongo&gt;=3.9.0 in order to use MongoOutput
+</pre></div></div>
+</div>
+<p><em>This cell imports necessary models and helpers from our py scripts.</em></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from models.baseline import StandardIDS
+from models.efficient_ids import EfficientIDS
+
+from helpers.ids_processor import IDSProcessor
+from helpers.data_processor import MemoryEfficientIDSDataProcessor
+</pre></div>
+</div>
+</div>
+<p><em>This cell establishes notebook-wide constants.</em></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>SAVED_MODELS_DIR = &quot;./saved_models&quot;
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Data-Directory-and-Configurations">
+<h2>Data Directory and Configurations<a class="headerlink" href="#Data-Directory-and-Configurations" title="Link to this heading">¶</a></h2>
+<p><em>This cell defines parameters for data loading, including the location of the dataset and the size of data chunks for processing. These settings can be adjusted as needed.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Dataset location and parameters
+data_dir = &#39;data/&#39;
+chunk_size = 100000
+saved_model = &quot;trained_matmulfree_model_12_11_24.pth&quot;
+epochs = 20
+
+print(&quot;Data directory:&quot;, data_dir)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data directory: data/
+</pre></div></div>
+</div>
+</section>
+<section id="Integration-Function">
+<h2>Integration Function<a class="headerlink" href="#Integration-Function" title="Link to this heading">¶</a></h2>
+<p><em>The function handles data preprocessing, training, and evaluation for the IDS models. This cell includes the definition to ensure clarity and usability within the notebook.</em></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def integrate_with_hardware_efficient_ids(
+        data_dir,
+        chunk_size=chunk_size,
+        saved_model=saved_model,
+        model_type=&#39;matmul_free&#39;,
+        epochs=epochs,
+        callback=None
+    ):
+    &quot;&quot;&quot;
+    Improved integration function with measurement callback.
+    &quot;&quot;&quot;
+    print(&quot;\nInitializing data processor...&quot;)
+    data_processor = MemoryEfficientIDSDataProcessor()
+
+    print(&quot;Loading and preprocessing data...&quot;)
+    try:
+        X, y, feature_columns = data_processor.load_and_preprocess_data(data_dir, chunk_size)
+    except Exception as e:
+        raise RuntimeError(f&quot;Error during data processing: {str(e)}&quot;)
+
+    # Data validation
+    print(&quot;\nValidating data...&quot;)
+    assert not np.isnan(X).any(), &quot;X contains NaN values&quot;
+    assert not np.isinf(X).any(), &quot;X contains infinite values&quot;
+    print(&quot;Data validation passed&quot;)
+
+    # Split data
+    print(&quot;\nSplitting data...&quot;)
+    X_train_val, X_test, y_train_val, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_train_val, y_train_val, test_size=0.2, random_state=42, stratify=y_train_val
+    )
+
+    # Initialize processor and train/load model
+    print(&quot;\nInitializing model...&quot;)
+    ids_processor = IDSProcessor()
+
+    if callback:
+        callback()  # Initial measurement
+
+    if saved_model and Path(f&#39;{SAVED_MODELS_DIR}/{saved_model}&#39;).exists():
+        print(&quot;Loading saved model...&quot;)
+        checkpoint = torch.load(f&#39;{SAVED_MODELS_DIR}/{saved_model}&#39;, map_location=torch.device(&#39;cpu&#39;))
+        ids_processor.model = (EfficientIDS if model_type == &#39;matmul_free&#39; else StandardIDS)(
+            num_features=X.shape[1],
+            **checkpoint[&#39;hyperparameters&#39;]
+        ).to(ids_processor.device)
+        print(&quot;Loading state dict...&quot;)
+        ids_processor.model.load_state_dict(checkpoint[&#39;model_state_dict&#39;])
+    else:
+        print(&quot;Training new model...&quot;)
+        def training_callback():
+            if callback:
+                callback()
+
+        ids_processor.train_model(
+            X_train, y_train,
+            X_val, y_val,
+            epochs=epochs,
+            model_type=model_type,
+            callback=training_callback
+        )
+
+        # Save model
+        checkpoint = {
+            &#39;model_state_dict&#39;: ids_processor.model.state_dict(),
+            &#39;hyperparameters&#39;: ids_processor.config,
+            &#39;feature_stats&#39;: data_processor.feature_stats
+        }
+        torch.save(
+            checkpoint,
+            f&#39;{SAVED_MODELS_DIR}/trained_{model_type}_model_{datetime.now().strftime(&quot;%m%d%Y-%H%M%S&quot;)}.pth&#39;
+        )
+
+    if callback:
+        callback()  # Final measurement
+
+    return ids_processor, {
+        &#39;X_test&#39;: X_test,
+        &#39;y_test&#39;: y_test,
+        &#39;feature_columns&#39;: feature_columns
+    }
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Running-the-Models-and-Measuring-Performance">
+<h2>Running the Models and Measuring Performance<a class="headerlink" href="#Running-the-Models-and-Measuring-Performance" title="Link to this heading">¶</a></h2>
+<p>!!! might want to break this section up</p>
+<p><em>This section runs the models, collects performance metrics, and logs CPU and energy usage. Inline measurements are taken using callbacks, and results are structured for later analysis.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Initialize results dictionary
+results = {}
+
+# Set up pyRAPL if available
+is_linux = platform.system() == &#39;Linux&#39;
+if PYRAPL_AVAILABLE and is_linux:
+    pyRAPL.setup()
+else:
+    print(&quot;pyRAPL unavailable. Using CPU usage for power estimation.&quot;)
+
+# Run both models
+for model_type in [&#39;matmul_free&#39;, &#39;standard&#39;]:
+    print(f&quot;\nRunning {model_type} model...&quot;)
+
+    # Initialize measurements
+    start_time = time.time()
+    cpu_usage = []
+    energy_meter = None
+
+    if PYRAPL_AVAILABLE and is_linux:
+        energy_meter = pyRAPL.Measurement(f&quot;{model_type}_energy&quot;)
+        energy_meter.begin()
+
+    try:
+        def measure_callback():
+            cpu_percent = psutil.cpu_percent()
+            cpu_usage.append(cpu_percent)
+
+        # Run model
+        if model_type == &#39;standard&#39;:
+            saved_model = &#39;trained_standard_model.pth&#39;
+        ids_processor, test_data = integrate_with_hardware_efficient_ids(
+            data_dir=data_dir,
+            chunk_size=chunk_size,
+            saved_model=saved_model,
+            model_type=model_type,
+            epochs=epochs,
+            callback=measure_callback
+        )
+
+        # Make predictions
+        predictions, prediction_scores = ids_processor.detect_anomalies(
+            test_data[&#39;X_test&#39;],
+            return_scores=True
+        )
+
+        # Calculate metrics
+        precision, recall, _ = precision_recall_curve(
+            test_data[&#39;y_test&#39;],
+            prediction_scores
+        )
+        pr_auc = auc(recall, precision)
+
+        classification_metrics = classification_report(
+            test_data[&#39;y_test&#39;],
+            predictions,
+            output_dict=True
+        )
+
+    finally:
+        if energy_meter:
+            energy_meter.end()
+
+    # Collect final measurements
+    end_time = time.time()
+    runtime = end_time - start_time
+    peak_cpu = max(cpu_usage) if cpu_usage else 0
+    avg_cpu = np.mean(cpu_usage) if cpu_usage else 0
+
+    # Calculate energy consumption
+    if energy_meter:
+        energy_consumed = energy_meter.result.energy / 1e6  # Convert to joules
+    else:
+        tdp_watts = 65  # Approximate TDP for a typical CPU
+        power_readings = [(tdp_watts * usage) / 100.0 for usage in cpu_usage]
+        energy_consumed = np.mean(power_readings) * runtime if power_readings else 0
+
+    # Store results
+    results[model_type] = {
+        &#39;runtime_seconds&#39;: runtime,
+        &#39;peak_cpu_usage_percent&#39;: peak_cpu,
+        &#39;avg_cpu_usage_percent&#39;: avg_cpu,
+        &#39;energy_consumed_joules&#39;: energy_consumed,
+        &#39;classification_report&#39;: classification_metrics,
+        &#39;precision&#39;: precision.tolist(),
+        &#39;recall&#39;: recall.tolist(),
+        &#39;pr_auc&#39;: pr_auc,
+        &#39;cpu_usage&#39;: cpu_usage,
+        &#39;y_test&#39;: test_data[&#39;y_test&#39;].tolist()
+    }
+
+    print(f&quot;\n{model_type.upper()} MODEL RESULTS:&quot;)
+    print(f&quot;Runtime: {runtime:.2f} seconds&quot;)
+    print(f&quot;Peak CPU Usage: {peak_cpu:.1f}%&quot;)
+    print(f&quot;Average CPU Usage: {avg_cpu:.1f}%&quot;)
+    print(f&quot;Energy Consumed: {energy_consumed:.2f} Joules&quot;)
+    print(f&quot;PR-AUC Score: {pr_auc:.3f}&quot;)
+    print(&quot;\nClassification Report:&quot;)
+    for label in [&#39;0.0&#39;, &#39;1.0&#39;]:
+        metrics = classification_metrics[label]
+        print(f&quot;\nClass {label}:&quot;)
+        print(f&quot;Precision: {metrics[&#39;precision&#39;]:.3f}&quot;)
+        print(f&quot;Recall: {metrics[&#39;recall&#39;]:.3f}&quot;)
+        print(f&quot;F1-score: {metrics[&#39;f1-score&#39;]:.3f}&quot;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+pyRAPL unavailable. Using CPU usage for power estimation.
+
+Running matmul_free model...
+
+Initializing data processor...
+Loading and preprocessing data...
+
+Processing Tuesday-WorkingHours.pcap_ISCX.csv...
+Processed 445909 total rows
+Removed 0 corrupted rows (0.00%)
+
+Data Statistics:
+Total samples: 445909
+
+Attack distribution:
+BENIGN: 432074 samples (96.90%)
+FTP-Patator: 7938 samples (1.78%)
+SSH-Patator: 5897 samples (1.32%)
+
+Combining processed data...
+Encoding labels...
+Handling missing values in features...
+Final dataset shape: (445909, 78)
+Number of features: 78
+Class distribution: [432074  13835]
+
+Validating data...
+Data validation passed
+
+Splitting data...
+
+Initializing model...
+Loading saved model...
+Loading state dict...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/var/folders/r4/4v8t12hd3y1253vtxg1gxdp80000gn/T/ipykernel_71311/919803221.py:45: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don&#39;t have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(f&#39;{SAVED_MODELS_DIR}/{saved_model}&#39;, map_location=torch.device(&#39;cpu&#39;))
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+MATMUL_FREE MODEL RESULTS:
+Runtime: 26.75 seconds
+Peak CPU Usage: 100.0%
+Average CPU Usage: 74.6%
+Energy Consumed: 1297.00 Joules
+PR-AUC Score: 0.995
+
+Classification Report:
+
+Class 0.0:
+Precision: 1.000
+Recall: 0.997
+F1-score: 0.999
+
+Class 1.0:
+Precision: 0.922
+Recall: 1.000
+F1-score: 0.959
+
+Running standard model...
+
+Initializing data processor...
+Loading and preprocessing data...
+
+Processing Tuesday-WorkingHours.pcap_ISCX.csv...
+Processed 445909 total rows
+Removed 0 corrupted rows (0.00%)
+
+Data Statistics:
+Total samples: 445909
+
+Attack distribution:
+BENIGN: 432074 samples (96.90%)
+FTP-Patator: 7938 samples (1.78%)
+SSH-Patator: 5897 samples (1.32%)
+
+Combining processed data...
+Encoding labels...
+Handling missing values in features...
+Final dataset shape: (445909, 78)
+Number of features: 78
+Class distribution: [432074  13835]
+
+Validating data...
+Data validation passed
+
+Splitting data...
+
+Initializing model...
+Loading saved model...
+Loading state dict...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/var/folders/r4/4v8t12hd3y1253vtxg1gxdp80000gn/T/ipykernel_71311/919803221.py:45: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don&#39;t have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(f&#39;{SAVED_MODELS_DIR}/{saved_model}&#39;, map_location=torch.device(&#39;cpu&#39;))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+STANDARD MODEL RESULTS:
+Runtime: 6.21 seconds
+Peak CPU Usage: 73.7%
+Average CPU Usage: 56.9%
+Energy Consumed: 229.65 Joules
+PR-AUC Score: 0.997
+
+Classification Report:
+
+Class 0.0:
+Precision: 1.000
+Recall: 0.997
+F1-score: 0.999
+
+Class 1.0:
+Precision: 0.917
+Recall: 0.998
+F1-score: 0.956
+</pre></div></div>
+</div>
+</section>
+<section id="Results-Summary">
+<h2>Results Summary<a class="headerlink" href="#Results-Summary" title="Link to this heading">¶</a></h2>
+<p><em>This cell saves the results into a JSON file for reference and displays a textual summary of the collected data.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Display summary
+import json
+print(json.dumps(results, indent=2)[:500])  # truncated for viewability
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+  &#34;matmul_free&#34;: {
+    &#34;runtime_seconds&#34;: 26.747725248336792,
+    &#34;peak_cpu_usage_percent&#34;: 100.0,
+    &#34;avg_cpu_usage_percent&#34;: 74.6,
+    &#34;energy_consumed_joules&#34;: 1296.997197291851,
+    &#34;classification_report&#34;: {
+      &#34;0.0&#34;: {
+        &#34;precision&#34;: 1.0,
+        &#34;recall&#34;: 0.9972921367818087,
+        &#34;f1-score&#34;: 0.9986442327748036,
+        &#34;support&#34;: 86415.0
+      },
+      &#34;1.0&#34;: {
+        &#34;precision&#34;: 0.9220259913362212,
+        &#34;recall&#34;: 1.0,
+        &#34;f1-score&#34;: 0.9594313453536755,
+        &#34;s
+</pre></div></div>
+</div>
+</section>
+<section id="Precision-Recall-Visualization">
+<h2>Precision-Recall Visualization<a class="headerlink" href="#Precision-Recall-Visualization" title="Link to this heading">¶</a></h2>
+<p><em>This cell generates precision-recall curves for each model, providing insights into their classification performance.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>for model_type in results:
+    # Precision-Recall Curve
+    plt.figure()
+    plt.plot(results[model_type][&#39;recall&#39;], results[model_type][&#39;precision&#39;], label=&#39;PR Curve&#39;)
+    plt.xlabel(&#39;Recall&#39;)
+    plt.ylabel(&#39;Precision&#39;)
+    plt.title(f&#39;{model_type.capitalize()} Model: Precision-Recall Curve&#39;)
+    plt.legend()
+    plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/pages_main_19_0.png" src="../_images/pages_main_19_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/pages_main_19_1.png" src="../_images/pages_main_19_1.png" />
+</div>
+</div>
+</section>
+<section id="CPU-Usage-Visualization">
+<h2>CPU Usage Visualization<a class="headerlink" href="#CPU-Usage-Visualization" title="Link to this heading">¶</a></h2>
+<p><em>This cell visualizes the CPU usage over time for each model, offering a perspective on computational efficiency.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>if not saved_model:
+    for model_type in results:
+        # CPU Usage
+        plt.figure()
+        plt.plot(results[model_type][&#39;cpu_usage&#39;], label=&#39;CPU Usage&#39;)
+        plt.xlabel(&#39;Time&#39;)
+        plt.ylabel(&#39;CPU Usage (%)&#39;)
+        plt.title(f&#39;{model_type.capitalize()} Model: CPU Usage Over Time&#39;)
+        plt.legend()
+        plt.savefig(f&#39;{SAVED_MODELS_DIR}/trained_{model_type}_model_{datetime.now().strftime(&quot;%m%d%Y-%H%M%S&quot;)}_cpu.png&#39;)
+        plt.show()
+else:
+    import matplotlib.image as mpimg
+    for saved_model in [&quot;trained_matmulfree_model_12_11_24.pth&quot;, &quot;trained_standard_model.pth&quot;]:
+        img_name = saved_model.replace(&#39;.pth&#39;, &#39;_cpu.png&#39;)
+        img = mpimg.imread(f&quot;{SAVED_MODELS_DIR}/{img_name}&quot;)
+        plt.imshow(img)
+        plt.axis(&#39;off&#39;)  # Turn off axis labels and ticks
+        plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/pages_main_21_0.png" src="../_images/pages_main_21_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/pages_main_21_1.png" src="../_images/pages_main_21_1.png" />
+</div>
+</div>
+</section>
+<section id="Confusion-Matrix-Visualization">
+<h2>Confusion Matrix Visualization<a class="headerlink" href="#Confusion-Matrix-Visualization" title="Link to this heading">¶</a></h2>
+<p><em>This cell visualizes the confusion matrix for each model.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>for model_type in results:
+    cm = confusion_matrix(results[model_type][&#39;y_test&#39;], predictions)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[&quot;Benign&quot;, &quot;Attack&quot;])
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title(f&quot;Confusion Matrix - {model_type}&quot;)
+    plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/pages_main_23_0.png" src="../_images/pages_main_23_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/pages_main_23_1.png" src="../_images/pages_main_23_1.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Conclusion">
+<h1>Conclusion<a class="headerlink" href="#Conclusion" title="Link to this heading">¶</a></h1>
+<p>This notebook provides an executable example of IDS performance evaluation, combining the integration function with inline performance measurements and visualization.</p>
+<p><em>The notebook achieves a comprehensive evaluation of IDS models and provides actionable insights for improving intrusion detection systems.</em></p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Network Anomaly Detection with BitNet</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Resources:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Project Notebook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Notebook-Summary">Notebook Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Packages">Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Setup-and-Initialization">Setup and Initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Data-Directory-and-Configurations">Data Directory and Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Integration-Function">Integration Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Running-the-Models-and-Measuring-Performance">Running the Models and Measuring Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Results-Summary">Results Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Precision-Recall-Visualization">Precision-Recall Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#CPU-Usage-Visualization">CPU Usage Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Confusion-Matrix-Visualization">Confusion Matrix Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#Conclusion">Conclusion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="efficient_ids.html">Our Model: Efficient Intrusion Detection System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ids_data_processor.html">Memory-Efficient Data Processor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ids_processor.html">IDS Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="standard_ids.html">Baseline IDS Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proposal.html">Project Proposal</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Network Anomaly Detection with BitNet | Intrusion Detection System (IDS)</a></li>
+      <li>Next: <a href="efficient_ids.html" title="next chapter">Our Model: Efficient Intrusion Detection System</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alexander Baumgartner, Alexander Williams, Alejandro Alonso.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/pages/main.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
