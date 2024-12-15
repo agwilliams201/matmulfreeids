@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
 import json
-from model import *  # Import everything from the model file
+from model import *
 
 try:
     import pyRAPL
@@ -17,7 +17,6 @@ except ImportError:
 
 def plot_metrics(results, model_type):
     """Plot metrics for the model run."""
-    # Create precision-recall curve
     if 'precision' in results[model_type] and 'recall' in results[model_type]:
         plt.figure(figsize=(10, 6))
         plt.plot(results[model_type]['recall'], results[model_type]['precision'])
@@ -27,7 +26,6 @@ def plot_metrics(results, model_type):
         plt.savefig(f'{model_type}_pr_curve.png')
         plt.close()
 
-    # Plot CPU usage if available
     if 'cpu_usage' in results[model_type]:
         plt.figure(figsize=(10, 6))
         plt.plot(results[model_type]['cpu_usage'])
@@ -39,14 +37,13 @@ def plot_metrics(results, model_type):
 
 def estimate_cpu_power(cpu_percent):
     """Estimate CPU power consumption based on usage."""
-    tdp_watts = 65  # Approximate TDP for a typical CPU
+    tdp_watts = 65
     return (tdp_watts * cpu_percent) / 100.0
 
 def run_models_and_measure(data_dir, chunk_size, load_model=True, epochs=20):
     """Run both models and measure their performance metrics."""
     results = {}
     
-    # Set up pyRAPL if available
     is_linux = platform.system() == 'Linux'
     if PYRAPL_AVAILABLE and is_linux:
         pyRAPL.setup()
@@ -56,7 +53,6 @@ def run_models_and_measure(data_dir, chunk_size, load_model=True, epochs=20):
     for model_type in ['standard', 'matmul_free']:
         print(f"\nRunning {model_type} model...")
         
-        # Initialize measurements
         start_time = time.time()
         cpu_usage = []
         energy_meter = None
@@ -70,7 +66,6 @@ def run_models_and_measure(data_dir, chunk_size, load_model=True, epochs=20):
                 cpu_percent = psutil.cpu_percent()
                 cpu_usage.append(cpu_percent)
             
-            # Run model
             ids_processor, test_data = integrate_with_hardware_efficient_ids(
                 data_dir=data_dir,
                 binary_classification=True,
@@ -82,13 +77,11 @@ def run_models_and_measure(data_dir, chunk_size, load_model=True, epochs=20):
                 callback=measure_callback
             )
 
-            # Make predictions
             predictions, prediction_scores = ids_processor.detect_anomalies(
                 test_data['X_test'], 
                 return_scores=True
             )
 
-            # Calculate metrics
             precision, recall, _ = precision_recall_curve(
                 test_data['y_test'],
                 prediction_scores
@@ -105,21 +98,17 @@ def run_models_and_measure(data_dir, chunk_size, load_model=True, epochs=20):
             if energy_meter:
                 energy_meter.end()
 
-        # Collect final measurements
         end_time = time.time()
         runtime = end_time - start_time
         peak_cpu = max(cpu_usage) if cpu_usage else 0
         avg_cpu = np.mean(cpu_usage) if cpu_usage else 0
         
-        # Calculate energy consumption
         if energy_meter:
-            energy_consumed = energy_meter.result.energy / 1e6  # Convert to joules
+            energy_consumed = energy_meter.result.energy / 1e6
         else:
-            # Estimate energy from CPU usage
             power_readings = [estimate_cpu_power(usage) for usage in cpu_usage]
             energy_consumed = np.mean(power_readings) * runtime if power_readings else 0
 
-        # Store results
         results[model_type] = {
             'runtime_seconds': runtime,
             'peak_cpu_usage_percent': peak_cpu,
@@ -132,7 +121,6 @@ def run_models_and_measure(data_dir, chunk_size, load_model=True, epochs=20):
             'cpu_usage': cpu_usage
         }
 
-        # Print results
         print(f"\n{model_type.upper()} MODEL RESULTS:")
         print(f"Runtime: {runtime:.2f} seconds")
         print(f"Peak CPU Usage: {peak_cpu:.1f}%")
@@ -147,7 +135,6 @@ def run_models_and_measure(data_dir, chunk_size, load_model=True, epochs=20):
             print(f"Recall: {metrics['recall']:.3f}")
             print(f"F1-score: {metrics['f1-score']:.3f}")
 
-        # Plot metrics
         plot_metrics(results, model_type)
 
     return results
@@ -166,7 +153,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        # Run models and collect results
         results = run_models_and_measure(
             args.data_dir,
             args.chunk_size,
@@ -174,10 +160,8 @@ if __name__ == "__main__":
             epochs=args.epochs
         )
 
-        # Save results to file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         with open(f'results_{timestamp}.json', 'w') as f:
-            # Convert numpy values to Python types for JSON serialization
             serializable_results = {}
             for model_type, model_results in results.items():
                 serializable_results[model_type] = {
